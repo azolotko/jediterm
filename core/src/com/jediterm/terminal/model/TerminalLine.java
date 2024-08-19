@@ -4,6 +4,7 @@ import com.jediterm.terminal.StyledTextConsumer;
 import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.util.CharUtils;
 import kotlin.Pair;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ public final class TerminalLine {
   private TextEntries myTextEntries = new TextEntries();
   private boolean myWrapped = false;
   private final List<TerminalLineIntervalHighlighting> myCustomHighlightings = new CopyOnWriteArrayList<>();
+  private final List<TerminalLineChangesListener> myListeners = new CopyOnWriteArrayList<>();
   TerminalLine myTypeAheadLine;
 
   public TerminalLine() {
@@ -383,6 +385,22 @@ public final class TerminalLine {
     };
     myCustomHighlightings.add(highlighting);
     return highlighting;
+  }
+
+  @ApiStatus.Experimental
+  public void addChangesListener(@NotNull TerminalLineChangesListener listener) {
+    myListeners.add(listener);
+  }
+
+  @ApiStatus.Experimental
+  public void removeChangesListener(@NotNull TerminalLineChangesListener listener) {
+    myListeners.remove(listener);
+  }
+
+  private void fireLineChanged(int xStart, int xEnd, @NotNull TextEntry newEntry) {
+    for (TerminalLineChangesListener listener : myListeners) {
+      listener.lineRangeChanged(xStart, xEnd, newEntry);
+    }
   }
 
   @Override

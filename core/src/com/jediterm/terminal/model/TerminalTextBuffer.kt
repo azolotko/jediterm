@@ -545,6 +545,27 @@ class TerminalTextBuffer(
     }
   }
 
+  private inline fun <T> getLineAndDoWithReportingChanges(index: Int, action: (TerminalLine) -> T): T {
+    val line = getLine(index)
+    val listener = createLineChangesListener(index)
+
+    line.addChangesListener(listener)
+    return try {
+      action(line)
+    }
+    finally {
+      line.removeChangesListener(listener)
+    }
+  }
+
+  private fun createLineChangesListener(lineY: Int): TerminalLineChangesListener {
+    return object : TerminalLineChangesListener {
+      override fun lineRangeChanged(xStart: Int, xEnd: Int, newEntry: TextEntry) {
+        changesMulticaster.lineChanged(lineY, xStart, xEnd, newEntry)
+      }
+    }
+  }
+
   companion object {
     private val LOG: Logger = LoggerFactory.getLogger(TerminalTextBuffer::class.java)
     private const val USE_CONPTY_COMPATIBLE_RESIZE = true
