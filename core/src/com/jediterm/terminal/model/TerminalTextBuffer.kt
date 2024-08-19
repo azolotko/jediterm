@@ -243,7 +243,9 @@ class TerminalTextBuffer(
       LOG.error("Attempt to delete negative chars number: count: $count")
     }
     else if (count > 0) {
-      screenLinesStorage[y].deleteCharacters(x, count, createEmptyStyleWithCurrentColor())
+      getLineAndDoWithReportingChanges(y) { line ->
+        line.deleteCharacters(x, count, createEmptyStyleWithCurrentColor())
+      }
       fireModelChangeEvent()
     }
   }

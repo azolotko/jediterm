@@ -185,6 +185,7 @@ public final class TerminalLine {
   }
 
   public void deleteCharacters(int x, int count, @NotNull TextStyle style) {
+    int lengthBefore = myTextEntries.length();
     int p = 0;
     TextEntries newEntries = new TextEntries();
 
@@ -216,8 +217,14 @@ public final class TerminalLine {
         p = x;
       }
     }
+
+    int deletedCount = Math.min(count, lengthBefore - x);
+    fireLineChanged(x, x + deletedCount, TextEntry.EMPTY);
+
     if (count > 0 && style != TextStyle.EMPTY) { // apply style to the end of the line
-      newEntries.add(new TextEntry(style, new CharBuffer(CharUtils.NUL_CHAR, count)));
+      var fillerEntry = new TextEntry(style, new CharBuffer(CharUtils.NUL_CHAR, count));
+      newEntries.add(fillerEntry);
+      fireLineChanged(lengthBefore - deletedCount, lengthBefore - deletedCount, fillerEntry);
     }
 
     myTextEntries = newEntries;
@@ -414,6 +421,8 @@ public final class TerminalLine {
   }
 
   public static class TextEntry {
+    public static final TextEntry EMPTY = new TextEntry(TextStyle.EMPTY, CharBuffer.EMPTY);
+
     private final TextStyle myStyle;
     private final CharBuffer myText;
 
