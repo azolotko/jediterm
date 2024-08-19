@@ -448,7 +448,9 @@ class TerminalTextBuffer(
   fun clearLines(startRow: Int, endRow: Int) {
     val filler = createFillerEntry()
     for (ind in startRow..endRow) {
-      screenLinesStorage[ind].clear(filler)
+      getLineAndDoWithReportingChanges(ind) { line ->
+        line.clear(filler)
+      }
       setLineWrapped(ind, false)
     }
     fireModelChangeEvent()
@@ -457,7 +459,9 @@ class TerminalTextBuffer(
   fun eraseCharacters(leftX: Int, rightX: Int, y: Int) {
     val style = createEmptyStyleWithCurrentColor()
     if (y >= 0) {
-      screenLinesStorage[y].clearArea(leftX, rightX, style)
+      getLineAndDoWithReportingChanges(y) { line ->
+        line.clearArea(leftX, rightX, style)
+      }
       fireModelChangeEvent()
       if (textProcessing != null && y < height) {
         textProcessing.processHyperlinks(screenLinesStorage, getLine(y))

@@ -174,6 +174,54 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Clear and Erase Characters ----------------------------------------------
+
+  fun `test clear line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.clearLines(1, 2)
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 1, xStart = 0, xEnd = 10, createFillerEntry(10)),
+      LineChangedEvent(index = 2, xStart = 0, xEnd = 9, createFillerEntry(10))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test erase characters in the middle`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.eraseCharacters(2, 6, 0)
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 2, xEnd = 6, spacesEntry(4))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test erase characters at the end of line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.eraseCharacters(4, 12, 0)
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 4, xEnd = 8, createFillerEntry(8))
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

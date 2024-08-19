@@ -84,8 +84,10 @@ public final class TerminalLine {
   }
 
   public void clear(@NotNull TextEntry filler) {
+    int lenBefore = myTextEntries.length();
     myTextEntries.clear();
     myTextEntries.add(filler);
+    fireLineChanged(0, lenBefore, filler);
   }
 
   public void writeString(int x, @NotNull CharBuffer str, @NotNull TextStyle style) {
