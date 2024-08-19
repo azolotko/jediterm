@@ -6,12 +6,24 @@ import com.jediterm.terminal.util.CharUtils
 import com.jediterm.util.CharBufferUtil
 
 @JvmOverloads
-fun terminalLine(text: String, style: TextStyle = TextStyle()): TerminalLine {
+fun terminalLine(text: String, style: TextStyle = TextStyle.EMPTY): TerminalLine {
   return TerminalLine(TextEntry(style, CharBufferUtil.create(text)))
 }
 
-fun createFillerEntry(width: Int): TextEntry {
-  return TextEntry(TextStyle(), CharBuffer(CharUtils.NUL_CHAR, width))
+fun terminalLine(vararg textEntries: TextEntry): TerminalLine {
+  val line = TerminalLine()
+  for (entry in textEntries) {
+    line.appendEntry(entry)
+  }
+  return line
+}
+
+fun textEntry(text: String, style: TextStyle = TextStyle.EMPTY): TextEntry {
+  return TextEntry(style, CharBufferUtil.create(text))
+}
+
+fun createFillerEntry(width: Int, style: TextStyle = TextStyle.EMPTY): TextEntry {
+  return TextEntry(style, CharBuffer(CharUtils.NUL_CHAR, width))
 }
 
 fun LinesStorage.getLineTexts(): List<String> {

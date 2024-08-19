@@ -439,6 +439,14 @@ public final class TerminalLine {
     }
 
     @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      TextEntry textEntry = (TextEntry) o;
+      return Objects.equals(myStyle, textEntry.myStyle) && Objects.equals(myText, textEntry.myText);
+    }
+
+    @Override
     public String toString() {
       return myText.length() + " chars, style: " + myStyle + ", text: " + myText;
     }

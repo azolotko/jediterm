@@ -112,6 +112,14 @@ public class CharBuffer implements Iterable<Character>, CharSequence {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CharBuffer that = (CharBuffer) o;
+    return Arrays.equals(myBuf, myStart, myLength, that.myBuf, that.myStart, that.myLength);
+  }
+
+  @Override
   public String toString() {
     return new String(myBuf, myStart, myLength);
   }
