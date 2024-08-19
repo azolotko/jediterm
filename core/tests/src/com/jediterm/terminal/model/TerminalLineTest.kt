@@ -188,4 +188,91 @@ class TerminalLineTest : TestCase() {
     )
     assertEquals(expected, line.entries)
   }
+
+  // ------------------------- Write String -------------------------------------------------------
+
+  fun `test write string inside single text entry`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1])
+    )
+
+    line.writeString(2, CharBuffer("ab"), styles[4])
+
+    val expected = listOf(
+      textEntry("fo", styles[0]),
+      textEntry("ab", styles[4]),
+      textEntry("o", styles[0]),
+      textEntry("barba", styles[1])
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test write string inside multiple text entries`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry(" 1 ", styles[1]),
+      textEntry("barba", styles[2]),
+      textEntry("abcde", styles[3])
+    )
+
+    line.writeString(2, CharBuffer("123456789"), styles[4])
+
+    val expected = listOf(
+      textEntry("fo", styles[0]),
+      textEntry("123456789", styles[4]),
+      textEntry("ba", styles[2]),
+      textEntry("abcde", styles[3])
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test write string with facing line length limit`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1])
+    )
+
+    line.writeString(8, CharBuffer("abcd"), styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("bar", styles[1]),
+      textEntry("abcd", styles[4]),
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test write string at the end of line`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1])
+    )
+
+    line.writeString(10, CharBuffer("ab"), styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+      textEntry("ab", styles[4]),
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test write string after the end of line`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1])
+    )
+
+    line.writeString(12, CharBuffer("ab"), styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+      textEntry("  ", TextStyle.EMPTY),
+      textEntry("ab", styles[4]),
+    )
+    assertEquals(expected, line.entries)
+  }
 }
