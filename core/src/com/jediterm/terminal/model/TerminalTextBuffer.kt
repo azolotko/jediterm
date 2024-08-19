@@ -258,7 +258,9 @@ class TerminalTextBuffer(
       LOG.error("Attempt to insert negative blank chars number: count:$count")
     }
     else if (count > 0) { // nothing to do
-      screenLinesStorage[y].insertBlankCharacters(x, count, width, createEmptyStyleWithCurrentColor())
+      getLineAndDoWithReportingChanges(y) { line ->
+        line.insertBlankCharacters(x, count, width, createEmptyStyleWithCurrentColor())
+      }
       fireModelChangeEvent()
     }
   }

@@ -267,16 +267,22 @@ public final class TerminalLine {
       }
 
       myTextEntries = collectFromBuffer(buf, styles);
+
+      fireLineChanged(x, x, new TextEntry(style, new CharBuffer(CharUtils.EMPTY_CHAR, count)));
+      int trimmedCount = lengthBefore + count - maxLen;
+      if (trimmedCount > 0) {
+        fireLineChanged(newLen, newLen + trimmedCount, TextEntry.EMPTY);
+      }
     }
     else {
       // Append after the end
       int emptyCountToAppend = Math.min(x, newLen) - lengthBefore;
       if (emptyCountToAppend > 0) {
-        myTextEntries.add(new TextEntry(TextStyle.EMPTY, new CharBuffer(CharUtils.EMPTY_CHAR, emptyCountToAppend)));
+        appendEntry(new TextEntry(TextStyle.EMPTY, new CharBuffer(CharUtils.EMPTY_CHAR, emptyCountToAppend)));
       }
       int blankCountToAppend = Math.min(x + count, newLen) - x;
       if (blankCountToAppend > 0) {
-        myTextEntries.add(new TextEntry(style, new CharBuffer(CharUtils.EMPTY_CHAR, blankCountToAppend)));
+        appendEntry(new TextEntry(style, new CharBuffer(CharUtils.EMPTY_CHAR, blankCountToAppend)));
       }
     }
   }
@@ -387,7 +393,9 @@ public final class TerminalLine {
   }
 
   void appendEntry(@NotNull TextEntry entry) {
+    int lenBefore = myTextEntries.length();
     myTextEntries.add(entry);
+    fireLineChanged(lenBefore, lenBefore, entry);
   }
 
   @SuppressWarnings("unused") // used by IntelliJ
