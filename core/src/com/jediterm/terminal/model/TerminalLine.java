@@ -230,45 +230,55 @@ public final class TerminalLine {
     myTextEntries = newEntries;
   }
 
+  /**
+   * Tries to insert count of blank characters at position x.
+   * If the resulting line length is greater than maxLen, then the ending of the line is trimmed to the maxLen.
+   * If x is greater than the line length, new characters will be appended,
+   * but the resulting line length won't become greater than the provided count.
+   */
   public void insertBlankCharacters(int x, int count, int maxLen, @NotNull TextStyle style) {
-    int len = myTextEntries.length();
-    len = Math.min(len + count, maxLen);
+    int lengthBefore = myTextEntries.length();
+    int newLen = Math.min(lengthBefore + count, maxLen);
 
-    char[] buf = new char[len];
-    TextStyle[] styles = new TextStyle[len];
+    if (x < lengthBefore) {
+      // Insert in the middle
+      char[] buf = new char[newLen];
+      TextStyle[] styles = new TextStyle[newLen];
 
-    int p = 0;
-    for (TextEntry entry : myTextEntries) {
-      for (int i = 0; i < entry.getLength() && p < len; i++) {
-        if (p == x) {
-          for (int j = 0; j < count && p < len; j++) {
-            buf[p] = CharUtils.EMPTY_CHAR;
-            styles[p] = style;
+      int p = 0;
+      for (TextEntry entry : myTextEntries) {
+        for (int i = 0; i < entry.getLength() && p < newLen; i++) {
+          if (p == x) {
+            for (int j = 0; j < count && p < newLen; j++) {
+              buf[p] = CharUtils.EMPTY_CHAR;
+              styles[p] = style;
+              p++;
+            }
+          }
+          if (p < newLen) {
+            buf[p] = entry.getText().charAt(i);
+            styles[p] = entry.getStyle();
             p++;
           }
         }
-        if (p < len) {
-          buf[p] = entry.getText().charAt(i);
-          styles[p] = entry.getStyle();
-          p++;
+        if (p >= newLen) {
+          break;
         }
       }
-      if (p >= len) {
-        break;
+
+      myTextEntries = collectFromBuffer(buf, styles);
+    }
+    else {
+      // Append after the end
+      int emptyCountToAppend = Math.min(x, newLen) - lengthBefore;
+      if (emptyCountToAppend > 0) {
+        myTextEntries.add(new TextEntry(TextStyle.EMPTY, new CharBuffer(CharUtils.EMPTY_CHAR, emptyCountToAppend)));
+      }
+      int blankCountToAppend = Math.min(x + count, newLen) - x;
+      if (blankCountToAppend > 0) {
+        myTextEntries.add(new TextEntry(style, new CharBuffer(CharUtils.EMPTY_CHAR, blankCountToAppend)));
       }
     }
-
-    // if not inserted yet (ie. x > len)
-    for (; p < x && p < len; p++) {
-      buf[p] = CharUtils.EMPTY_CHAR;
-      styles[p] = TextStyle.EMPTY;
-    }
-    for (; p < x + count && p < len; p++) {
-      buf[p] = CharUtils.EMPTY_CHAR;
-      styles[p] = style;
-    }
-
-    myTextEntries = collectFromBuffer(buf, styles);
   }
 
   public void clearArea(int leftX, int rightX, @NotNull TextStyle style) {
