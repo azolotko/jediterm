@@ -102,12 +102,15 @@ public final class TerminalLine {
     if (x >= len) {
       // fill the gap
       if (x - len > 0) {
-        myTextEntries.add(new TextEntry(TextStyle.EMPTY, new CharBuffer(CharUtils.NUL_CHAR, x - len)));
+        appendEntry(new TextEntry(TextStyle.EMPTY, new CharBuffer(CharUtils.NUL_CHAR, x - len)));
       }
-      myTextEntries.add(new TextEntry(style, characters));
+      appendEntry(new TextEntry(style, characters));
     } else {
-      len = Math.max(len, x + characters.length());
-      myTextEntries = merge(x, characters, style, myTextEntries, len);
+      int newLen = Math.max(len, x + characters.length());
+      myTextEntries = merge(x, characters, style, myTextEntries, newLen);
+
+      int endX = Math.min(len, x + characters.length());
+      fireLineChanged(x, endX, new TextEntry(style, characters));
     }
   }
 

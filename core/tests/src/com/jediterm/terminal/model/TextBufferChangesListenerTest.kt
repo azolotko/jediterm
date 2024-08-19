@@ -115,6 +115,65 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Insert Blank Characters -------------------------------------------------
+
+  fun `test write string without facing line length limit`() {
+    val buffer = TerminalTextBuffer(15, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.writeString(4, 1, CharBuffer("Other"))
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 4, xEnd = 8, textEntry("Other"))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test write string with facing line length limit`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.writeString(4, 1, CharBuffer("OtherLine"))
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 4, xEnd = 8, textEntry("OtherLine"))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test write string at the end of line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.writeString(8, 1, CharBuffer("Line"))
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 8, xEnd = 8, textEntry("Line"))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test write string after the end of line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("someLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.writeString(10, 1, CharBuffer("Line"))
+    }
+
+    val expected = listOf(
+      LineChangedEvent(index = 0, xStart = 8, xEnd = 8, textEntry("  ")),
+      LineChangedEvent(index = 0, xStart = 10, xEnd = 10, textEntry("Line"))
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

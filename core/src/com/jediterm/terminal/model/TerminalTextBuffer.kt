@@ -275,10 +275,11 @@ class TerminalTextBuffer(
   }
 
   private fun writeString(x: Int, y: Int, str: CharBuffer, style: TextStyle) {
-    val line = screenLinesStorage[y - 1]
-    line.writeString(x, str, style)
+    getLineAndDoWithReportingChanges(y - 1) { line ->
+      line.writeString(x, str, style)
+    }
 
-    textProcessing?.processHyperlinks(screenLinesStorage, line)
+    textProcessing?.processHyperlinks(screenLinesStorage, screenLinesStorage[y - 1])
     fireModelChangeEvent()
   }
 
