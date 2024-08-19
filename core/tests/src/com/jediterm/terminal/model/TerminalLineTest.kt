@@ -13,6 +13,8 @@ class TerminalLineTest : TestCase() {
     TextStyle(TerminalColor.index(3), null),
   )
 
+  // ------------------------- Delete Characters --------------------------------------------------
+
   fun `test delete characters inside single text entry`() {
     val line = terminalLine(
       textEntry("foofo", styles[0]),
@@ -94,6 +96,95 @@ class TerminalLineTest : TestCase() {
     val expected = listOf(
       textEntry("fo", styles[0]),
       createFillerEntry(100, styles[4]),
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  // ------------------------- Insert Blank Characters --------------------------------------------
+
+  fun `test insert blank characters in the middle not facing the line length limit`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+
+    line.insertBlankCharacters(2, 5, 30, styles[4])
+
+    val expected = listOf(
+      textEntry("fo", styles[0]),
+      textEntry("     ", styles[4]),
+      textEntry("ofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test insert blank characters in the middle facing the line length limit`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+
+    line.insertBlankCharacters(8, 4, 11, styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("bar", styles[1]),
+      textEntry("   ", styles[4])
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test insert blank characters on line end`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+
+    line.insertBlankCharacters(10, 4, 15, styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+      textEntry("    ", styles[4])
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test insert blank characters after line end`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+
+    // It will actually insert 2 blank characters after the line end and then 2 characters with the provided style.
+    // So, the count limits the total added characters.
+    line.insertBlankCharacters(12, 4, 20, styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+      textEntry("  ", TextStyle.EMPTY),
+      textEntry("  ", styles[4])
+    )
+    assertEquals(expected, line.entries)
+  }
+
+  fun `test insert blank characters after line end facing the line length limit`() {
+    val line = terminalLine(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+    )
+
+    // It will actually insert 2 blank characters after the line end and then 1 character with the provided style.
+    // So, the count and max line length limit the total added characters.
+    line.insertBlankCharacters(12, 4, 13, styles[4])
+
+    val expected = listOf(
+      textEntry("foofo", styles[0]),
+      textEntry("barba", styles[1]),
+      textEntry("  ", TextStyle.EMPTY),
+      textEntry(" ", styles[4])
     )
     assertEquals(expected, line.entries)
   }

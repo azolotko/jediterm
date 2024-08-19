@@ -262,12 +262,10 @@ public final class TerminalLine {
     for (; p < x && p < len; p++) {
       buf[p] = CharUtils.EMPTY_CHAR;
       styles[p] = TextStyle.EMPTY;
-      p++;
     }
     for (; p < x + count && p < len; p++) {
       buf[p] = CharUtils.EMPTY_CHAR;
       styles[p] = style;
-      p++;
     }
 
     myTextEntries = collectFromBuffer(buf, styles);
