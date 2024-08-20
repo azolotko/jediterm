@@ -26,6 +26,12 @@ internal class TextBufferChangesMulticaster : TextBufferChangesListener {
     }
   }
 
+  override fun linesMovedToHistory(count: Int) {
+    forEachListeners {
+      it.linesMovedToHistory(count)
+    }
+  }
+
   override fun lineChanged(index: Int, xStart: Int, xEnd: Int, newEntry: TextEntry) {
     forEachListeners {
       it.lineChanged(index, xStart, xEnd, newEntry)
