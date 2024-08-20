@@ -457,8 +457,18 @@ class TerminalTextBuffer(
 
   // returns deleted lines
   fun deleteLines(y: Int, count: Int, scrollRegionBottom: Int): List<TerminalLine> {
-    val deletedLines = screenLinesStorage.deleteLines(y, count, scrollRegionBottom - 1, createFillerEntry())
+    val lastLineY = scrollRegionBottom - 1
+    val filler = createFillerEntry()
+    val deletedLines = screenLinesStorage.deleteLines(y, count, lastLineY, filler)
+
+    val deletedCount = deletedLines.size
+    if (deletedCount > 0) {
+      val fillerLines = buildList { repeat(deletedCount) { add(TerminalLine(filler)) } }
+      changesMulticaster.linesRemoved(y, deletedCount)
+      changesMulticaster.linesAdded(lastLineY - deletedCount + 1, fillerLines)
+    }
     fireModelChangeEvent()
+
     return deletedLines
   }
 

@@ -491,6 +491,135 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Delete Lines ------------------------------------------------------------
+
+  fun `test delete lines from start`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 0, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 0, count = 2),
+      LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test delete lines in the middle`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 1, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 1, count = 2),
+      LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test delete lines before last line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 3, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 3, count = 1),
+      LinesAddedEvent(index = 3, lines = listOf(fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test delete lines after the end`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 4, count = 2, scrollRegionBottom = 4)
+    }
+
+    // Nothing should be changed
+    val expected = emptyList<TextBufferChangeEvent>()
+    assertEquals(expected, events)
+  }
+
+  fun `test delete lines preserving end lines`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 1, count = 2, scrollRegionBottom = 3)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 1, count = 2),
+      LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test delete more lines than in the y to lastLine range`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 1, count = 5, scrollRegionBottom = 3)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 1, count = 2),
+      LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test delete zero lines`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.deleteLines(y = 1, count = 0, scrollRegionBottom = 4)
+    }
+
+    // Nothing should be changed
+    val expected = emptyList<TextBufferChangeEvent>()
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }
