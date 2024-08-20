@@ -265,6 +265,48 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Add, Move to History ----------------------------------------------------
+
+  fun `test adding new line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("zeroLine"))
+
+    val line1 = terminalLine("firstLine")
+    val line2 = terminalLine("secondLine")
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.addLine(line1)
+      buffer.addLine(line2)
+    }
+
+    val expected = listOf(
+      LinesAddedEvent(1, listOf(line1)),
+      LinesAddedEvent(2, listOf(line2))
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test move screen lines to history`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+    buffer.addLine(terminalLine("fifthLine"))
+    buffer.addLine(terminalLine(spacesEntry(4)))
+    buffer.addLine(terminalLine(createFillerEntry(10)))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.moveScreenLinesToHistory()
+    }
+
+    val expected = listOf(
+      LinesRemovedEvent(index = 6, count = 1),
+      LinesMovedToHistoryEvent(count = 6)
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

@@ -278,7 +278,9 @@ class TerminalTextBuffer(
 
   fun addLine(line: TerminalLine) {
     screenLinesStorage.addToBottom(line)
+
     fireModelChangeEvent()
+    changesMulticaster.linesAdded(screenLinesCount - 1, listOf(line))
   }
 
   private fun writeString(x: Int, y: Int, str: CharBuffer, style: TextStyle) {
@@ -527,14 +529,17 @@ class TerminalTextBuffer(
 
   fun moveScreenLinesToHistory() {
     modify {
-      screenLinesStorage.removeBottomEmptyLines(screenLinesStorage.size)
+      removeBottomEmptyLines(screenLinesStorage.size)
       val removedScreenLines = screenLinesStorage.removeFromTop(screenLinesStorage.size)
       historyLinesStorage.addAllToBottom(removedScreenLines)
+
+      if (removedScreenLines.isNotEmpty()) {
+        changesMulticaster.linesMovedToHistory(removedScreenLines.size)
+        fireHistoryBufferLineCountChanged()
+      }
+
       if (historyLinesStorage.size > 0) {
         setLineWrapped(-1, false)
-      }
-      if (removedScreenLines.isNotEmpty()) {
-        fireHistoryBufferLineCountChanged()
       }
     }
   }
