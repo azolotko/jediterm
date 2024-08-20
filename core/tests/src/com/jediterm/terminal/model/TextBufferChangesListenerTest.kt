@@ -620,6 +620,44 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  fun `test moving lines to history through scrolling`() {
+    val buffer = TerminalTextBuffer(10, 4, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.scrollArea(scrollRegionTop = 1, dy = -2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesMovedToHistoryEvent(2),
+      LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine)),
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test deleting lines through scrolling`() {
+    val buffer = TerminalTextBuffer(10, 4, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.scrollArea(scrollRegionTop = 2, dy = -2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesRemovedEvent(index = 1, count = 2),
+      LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine)),
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

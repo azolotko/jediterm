@@ -300,11 +300,8 @@ class TerminalTextBuffer(
       insertLines(scrollRegionTop - 1, dy, scrollRegionBottom)
     }
     else {
-      val deletedLines = deleteLines(scrollRegionTop - 1, -dy, scrollRegionBottom)
-      if (scrollRegionTop == 1) {
-        historyLinesStorage.addAllToBottom(deletedLines)
-      }
-      fireModelChangeEvent()
+      val isMoveToHistory = scrollRegionTop == 1
+      deleteLines(scrollRegionTop - 1, -dy, scrollRegionBottom, isMoveToHistory)
     }
   }
 
@@ -457,14 +454,27 @@ class TerminalTextBuffer(
 
   // returns deleted lines
   fun deleteLines(y: Int, count: Int, scrollRegionBottom: Int): List<TerminalLine> {
+    return deleteLines(y, count, scrollRegionBottom, isMoveToHistory = false)
+  }
+
+  /**
+   * @param isMoveToHistory whether removed lines should be added to the top of the history and reported correspondingly.
+   */
+  private fun deleteLines(y: Int, count: Int, scrollRegionBottom: Int, isMoveToHistory: Boolean): List<TerminalLine> {
     val lastLineY = scrollRegionBottom - 1
     val filler = createFillerEntry()
     val deletedLines = screenLinesStorage.deleteLines(y, count, lastLineY, filler)
 
     val deletedCount = deletedLines.size
     if (deletedCount > 0) {
+      if (isMoveToHistory) {
+        historyLinesStorage.addAllToBottom(deletedLines)
+        changesMulticaster.linesMovedToHistory(deletedCount)
+      }
+      else {
+        changesMulticaster.linesRemoved(y, deletedCount)
+      }
       val fillerLines = buildList { repeat(deletedCount) { add(TerminalLine(filler)) } }
-      changesMulticaster.linesRemoved(y, deletedCount)
       changesMulticaster.linesAdded(lastLineY - deletedCount + 1, fillerLines)
     }
     fireModelChangeEvent()
