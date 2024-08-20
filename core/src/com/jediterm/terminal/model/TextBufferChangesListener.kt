@@ -14,6 +14,8 @@ interface TextBufferChangesListener {
    */
   fun linesMovedToHistory(count: Int) {}
 
+  fun historyCleared() {}
+
   /**
    * The range from [xStart] (inclusively) to [xEnd] (exclusively) was replaced with [newEntry] in the line on [index].
    */

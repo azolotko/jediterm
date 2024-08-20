@@ -327,6 +327,10 @@ class TextBufferChangesListenerTest : TestCase() {
         events.add(LinesMovedToHistoryEvent(count))
       }
 
+      override fun historyCleared() {
+        events.add(HistoryClearedEvent)
+      }
+
       override fun lineChanged(index: Int, xStart: Int, xEnd: Int, newEntry: TextEntry) {
         events.add(LineChangedEvent(index, xStart, xEnd, newEntry))
       }
@@ -356,6 +360,8 @@ class TextBufferChangesListenerTest : TestCase() {
     data class LinesRemovedEvent(val index: Int, val count: Int) : TextBufferChangeEvent
 
     data class LinesMovedToHistoryEvent(val count: Int) : TextBufferChangeEvent
+
+    data object HistoryClearedEvent : TextBufferChangeEvent
 
     data class LineChangedEvent(val index: Int, val xStart: Int, val xEnd: Int, val newEntry: TextEntry) : TextBufferChangeEvent
 
