@@ -307,6 +307,61 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Clear -------------------------------------------------------------------
+
+  fun `test clear screen buffer`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.clearScreenBuffer()
+    }
+
+    val expected = listOf(
+      LinesRemovedEvent(index = 0, count = 3)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test clear history buffer`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.moveScreenLinesToHistory()
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.clearHistory()
+    }
+
+    val expected = listOf(
+      HistoryClearedEvent
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test clear screen and history buffers`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.moveScreenLinesToHistory()
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.clearScreenAndHistoryBuffers()
+    }
+
+    val expected = listOf(
+      LinesRemovedEvent(index = 0, count = 2),
+      HistoryClearedEvent
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }
