@@ -362,6 +362,135 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Insert Lines ------------------------------------------------------------
+
+  fun `test insert lines to start`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 0, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesAddedEvent(index = 0, lines = listOf(fillerLine, fillerLine)),
+      LinesRemovedEvent(index = 4, count = 2)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test insert lines in the middle`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 1, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine)),
+      LinesRemovedEvent(index = 4, count = 2)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test insert lines before last line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 3, count = 2, scrollRegionBottom = 4)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesAddedEvent(index = 3, lines = listOf(fillerLine, fillerLine)),
+      LinesRemovedEvent(index = 4, count = 2)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test insert lines after the end`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 4, count = 2, scrollRegionBottom = 4)
+    }
+
+    // Nothing should be changed
+    val expected = emptyList<TextBufferChangeEvent>()
+    assertEquals(expected, events)
+  }
+
+  fun `test insert lines preserving end lines`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 1, count = 2, scrollRegionBottom = 3)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine)),
+      LinesRemovedEvent(index = 3, count = 2)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test insert more lines than in the y to lastLine range`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 1, count = 5, scrollRegionBottom = 3)
+    }
+
+    val fillerLine = terminalLine(createFillerEntry(10))
+    val expected = listOf(
+      LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine, fillerLine, fillerLine, fillerLine)),
+      LinesRemovedEvent(index = 3, count = 5)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test insert zero lines`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.insertLines(y = 1, count = 0, scrollRegionBottom = 4)
+    }
+
+    // Nothing should be changed
+    val expected = emptyList<TextBufferChangeEvent>()
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

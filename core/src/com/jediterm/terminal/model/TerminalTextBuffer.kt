@@ -443,7 +443,15 @@ class TerminalTextBuffer(
   }
 
   fun insertLines(y: Int, count: Int, scrollRegionBottom: Int) {
-    screenLinesStorage.insertLines(y, count, scrollRegionBottom - 1, createFillerEntry())
+    val lastLineY = scrollRegionBottom - 1
+    val filler = createFillerEntry()
+    screenLinesStorage.insertLines(y, count, lastLineY, filler)
+
+    if (y <= lastLineY && count > 0) {
+      val fillerLines = buildList { repeat(count) { add(TerminalLine(filler)) } }
+      changesMulticaster.linesAdded(y, fillerLines)
+      changesMulticaster.linesRemoved(lastLineY + 1, count)
+    }
     fireModelChangeEvent()
   }
 

@@ -432,6 +432,14 @@ public final class TerminalLine {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TerminalLine that = (TerminalLine) o;
+    return myWrapped == that.myWrapped && Objects.equals(myTextEntries, that.myTextEntries) && Objects.equals(myTypeAheadLine, that.myTypeAheadLine);
+  }
+
+  @Override
   public String toString() {
     return myTextEntries.length() + " chars, " +
         (myWrapped ? "wrapped, " : "") +
@@ -516,6 +524,14 @@ public final class TerminalLine {
     public void clear() {
       myTextEntries.clear();
       myLength = 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      TextEntries that = (TextEntries) o;
+      return Objects.equals(myTextEntries, that.myTextEntries);
     }
   }
 }
