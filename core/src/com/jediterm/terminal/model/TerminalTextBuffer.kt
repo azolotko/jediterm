@@ -317,7 +317,13 @@ class TerminalTextBuffer(
         LOG.error("Attempt to get line out of bounds: $index >= $height")
         return TerminalLine.createEmpty()
       }
-      return screenLinesStorage[index]
+      val sizeBefore = screenLinesCount
+      val line = screenLinesStorage[index]
+      if (screenLinesCount > sizeBefore) {
+        val lines = buildList { repeat(screenLinesCount - sizeBefore) { add(TerminalLine.createEmpty()) } }
+        changesMulticaster.linesAdded(sizeBefore, lines)
+      }
+      return line
     }
     else {
       if (index < -historyLinesCount) {
@@ -340,7 +346,7 @@ class TerminalTextBuffer(
     try {
       val sb = StringBuilder()
       for (row in 0 until height) {
-        val line = StringBuilder(screenLinesStorage[row].text)
+        val line = StringBuilder(getLine(row).text)
 
         for (i in line.length until width) {
           line.append(' ')

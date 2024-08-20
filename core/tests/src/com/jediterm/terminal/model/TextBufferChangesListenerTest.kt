@@ -658,6 +658,22 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  fun `test adding empty lines on get`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.getLine(3)
+    }
+
+    val fillerLine = TerminalLine.createEmpty()
+    val expected = listOf(
+      LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine))
+    )
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }
