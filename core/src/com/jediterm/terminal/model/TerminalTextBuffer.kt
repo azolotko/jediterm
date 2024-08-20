@@ -143,11 +143,15 @@ class TerminalTextBuffer(
         // Count of lines to remove from the screen buffer (TerminalLine objects are created for those lines)
         val actualLinesToRemove = maxBottomLinesToRemove - emptyLinesCount
         // Total count of already empty lines and removed empty lines
-        val emptyLinesDeleted = emptyLinesCount + screenLinesStorage.removeBottomEmptyLines(actualLinesToRemove)
+        val emptyLinesDeleted = emptyLinesCount + removeBottomEmptyLines(actualLinesToRemove)
 
         val screenLinesToMove = lineDiffCount - emptyLinesDeleted
         val removedLines = screenLinesStorage.removeFromTop(screenLinesToMove)
         historyLinesStorage.addAllToBottom(removedLines)
+        if (removedLines.isNotEmpty()) {
+          changesMulticaster.linesMovedToHistory(removedLines.size)
+        }
+
         newCursorY = oldCursorY - screenLinesToMove
         selection?.shiftY(-screenLinesToMove)
       }
@@ -164,6 +168,9 @@ class TerminalTextBuffer(
         if (!alternateBuffer) {
           //we need to move lines from scroll buffer to the text buffer
           val historyLinesCount = min(newHeight - oldHeight, historyLinesStorage.size)
+
+          // Note: reflect these changes on TextBufferChangesMulticaster if this code became actual.
+          // Now this code is not working because USE_CONPTY_COMPATIBLE_RESIZE is true.
           val removedLines = historyLinesStorage.removeFromBottom(historyLinesCount)
           screenLinesStorage.addAllToTop(removedLines)
           newCursorY = oldCursorY + historyLinesCount
@@ -554,6 +561,12 @@ class TerminalTextBuffer(
     }
   }
 
+  private fun removeBottomEmptyLines(count: Int): Int {
+    val removedCount = screenLinesStorage.removeBottomEmptyLines(count)
+    changesMulticaster.linesRemoved(screenLinesStorage.size, removedCount)
+    return removedCount
+  }
+
   private inline fun <T> getLineAndDoWithReportingChanges(index: Int, action: (TerminalLine) -> T): T {
     val line = getLine(index)
     val listener = createLineChangesListener(index)
@@ -577,6 +590,13 @@ class TerminalTextBuffer(
 
   companion object {
     private val LOG: Logger = LoggerFactory.getLogger(TerminalTextBuffer::class.java)
+
+    /**
+     * Whether to not allow moving lines from the history buffer to the screen if terminal height is increased.
+     *
+     * Note: if this property became false, then it is required to ensure that
+     * text buffer model changes related to this property are properly reflected on TextBufferChangesMulticaster.
+     */
     private const val USE_CONPTY_COMPATIBLE_RESIZE = true
   }
 }

@@ -1,5 +1,7 @@
 package com.jediterm.terminal.model
 
+import com.jediterm.core.util.CellPosition
+import com.jediterm.core.util.TermSize
 import com.jediterm.terminal.TextStyle
 import com.jediterm.terminal.model.TerminalLine.TextEntry
 import com.jediterm.terminal.model.TextBufferChangesListenerTest.TextBufferChangeEvent.*
@@ -219,6 +221,47 @@ class TextBufferChangesListenerTest : TestCase() {
     val expected = listOf(
       LineChangedEvent(index = 0, xStart = 4, xEnd = 8, createFillerEntry(8))
     )
+    assertEquals(expected, events)
+  }
+
+  // -------------------- Resize ------------------------------------------------------------------
+
+  fun `test resize with decreasing height`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+    buffer.addLine(terminalLine("fifthLine"))
+    buffer.addLine(terminalLine(spacesEntry(4)))
+    buffer.addLine(terminalLine(createFillerEntry(10)))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.resize(TermSize(10, 3), CellPosition(1, 5), selection = null)
+    }
+
+    val expected = listOf(
+      LinesRemovedEvent(index = 6, count = 1),
+      LinesMovedToHistoryEvent(count = 3)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test resize with increasing height`() {
+    val buffer = TerminalTextBuffer(10, 3, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.moveScreenLinesToHistory()
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+    buffer.addLine(terminalLine("fifthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.resize(TermSize(10, 10), CellPosition(9, 3), selection = null)
+    }
+
+    // Nothing is moved from the history to the screen
+    val expected = emptyList<TextBufferChangeEvent>()
     assertEquals(expected, events)
   }
 
