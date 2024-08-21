@@ -241,8 +241,8 @@ class TextBufferChangesListenerTest : TestCase() {
     }
 
     val expected = listOf(
-      LinesRemovedEvent(index = 6, count = 1),
-      LinesMovedToHistoryEvent(count = 3)
+      LinesRemovedEvent(index = 6, lines = listOf(terminalLine(createFillerEntry(10)))),
+      LinesMovedToHistoryEvent(lines = listOf(terminalLine("firstLine"), terminalLine("secondLine"), terminalLine("thirdLine")))
     )
     assertEquals(expected, events)
   }
@@ -320,8 +320,17 @@ class TextBufferChangesListenerTest : TestCase() {
     }
 
     val expected = listOf(
-      LinesRemovedEvent(index = 6, count = 1),
-      LinesMovedToHistoryEvent(count = 6)
+      LinesRemovedEvent(index = 6, lines = listOf(terminalLine(createFillerEntry(10)))),
+      LinesMovedToHistoryEvent(
+        lines = listOf(
+          terminalLine("firstLine"),
+          terminalLine("secondLine"),
+          terminalLine("thirdLine"),
+          terminalLine("forthLine"),
+          terminalLine("fifthLine"),
+          terminalLine(spacesEntry(4))
+        )
+      )
     )
     assertEquals(expected, events)
   }
@@ -330,16 +339,21 @@ class TextBufferChangesListenerTest : TestCase() {
 
   fun `test clear screen buffer`() {
     val buffer = TerminalTextBuffer(10, 10, StyleState())
-    buffer.addLine(terminalLine("firstLine"))
-    buffer.addLine(terminalLine("secondLine"))
-    buffer.addLine(terminalLine("thirdLine"))
+    val lines = listOf(
+      terminalLine("firstLine"),
+      terminalLine("secondLine"),
+      terminalLine("thirdLine"),
+    )
+    for (line in lines) {
+      buffer.addLine(line)
+    }
 
     val events = buffer.doWithCollectingEvents {
       buffer.clearScreenBuffer()
     }
 
     val expected = listOf(
-      LinesRemovedEvent(index = 0, count = 3)
+      LinesRemovedEvent(index = 0, lines),
     )
     assertEquals(expected, events)
   }
@@ -375,7 +389,7 @@ class TextBufferChangesListenerTest : TestCase() {
     }
 
     val expected = listOf(
-      LinesRemovedEvent(index = 0, count = 2),
+      LinesRemovedEvent(index = 0, lines = listOf(terminalLine("thirdLine"), terminalLine("forthLine"))),
       HistoryClearedEvent
     )
     assertEquals(expected, events)
@@ -397,7 +411,7 @@ class TextBufferChangesListenerTest : TestCase() {
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
       LinesAddedEvent(index = 0, lines = listOf(fillerLine, fillerLine)),
-      LinesRemovedEvent(index = 4, count = 2)
+      LinesRemovedEvent(index = 4, lines = listOf(terminalLine("thirdLine"), terminalLine("forthLine")))
     )
     assertEquals(expected, events)
   }
@@ -416,7 +430,7 @@ class TextBufferChangesListenerTest : TestCase() {
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
       LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine)),
-      LinesRemovedEvent(index = 4, count = 2)
+      LinesRemovedEvent(index = 4, lines = listOf(terminalLine("thirdLine"), terminalLine("forthLine")))
     )
     assertEquals(expected, events)
   }
@@ -435,7 +449,7 @@ class TextBufferChangesListenerTest : TestCase() {
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
       LinesAddedEvent(index = 3, lines = listOf(fillerLine, fillerLine)),
-      LinesRemovedEvent(index = 4, count = 2)
+      LinesRemovedEvent(index = 4, lines = listOf(fillerLine, terminalLine("forthLine")))
     )
     assertEquals(expected, events)
   }
@@ -470,7 +484,7 @@ class TextBufferChangesListenerTest : TestCase() {
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
       LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine)),
-      LinesRemovedEvent(index = 3, count = 2)
+      LinesRemovedEvent(index = 3, lines = listOf(terminalLine("secondLine"), terminalLine("thirdLine")))
     )
     assertEquals(expected, events)
   }
@@ -489,7 +503,10 @@ class TextBufferChangesListenerTest : TestCase() {
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
       LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine, fillerLine, fillerLine, fillerLine)),
-      LinesRemovedEvent(index = 3, count = 5)
+      LinesRemovedEvent(
+        index = 3,
+        lines = listOf(fillerLine, fillerLine, fillerLine, terminalLine("secondLine"), terminalLine("thirdLine"))
+      )
     )
     assertEquals(expected, events)
   }
@@ -525,7 +542,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 0, count = 2),
+      LinesRemovedEvent(index = 0, lines = listOf(terminalLine("firstLine"), terminalLine("secondLine"))),
       LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine))
     )
     assertEquals(expected, events)
@@ -544,7 +561,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 1, count = 2),
+      LinesRemovedEvent(index = 1, lines = listOf(terminalLine("secondLine"), terminalLine("thirdLine"))),
       LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine))
     )
     assertEquals(expected, events)
@@ -563,7 +580,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 3, count = 1),
+      LinesRemovedEvent(index = 3, lines = listOf(terminalLine("forthLine"))),
       LinesAddedEvent(index = 3, lines = listOf(fillerLine))
     )
     assertEquals(expected, events)
@@ -598,7 +615,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 1, count = 2),
+      LinesRemovedEvent(index = 1, lines = listOf(terminalLine("secondLine"), terminalLine("thirdLine"))),
       LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine))
     )
     assertEquals(expected, events)
@@ -617,7 +634,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 1, count = 2),
+      LinesRemovedEvent(index = 1, lines = listOf(terminalLine("secondLine"), terminalLine("thirdLine"))),
       LinesAddedEvent(index = 1, lines = listOf(fillerLine, fillerLine))
     )
     assertEquals(expected, events)
@@ -652,7 +669,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesMovedToHistoryEvent(2),
+      LinesMovedToHistoryEvent(lines = listOf(terminalLine("firstLine"), terminalLine("secondLine"))),
       LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine)),
     )
     assertEquals(expected, events)
@@ -671,7 +688,7 @@ class TextBufferChangesListenerTest : TestCase() {
 
     val fillerLine = terminalLine(createFillerEntry(10))
     val expected = listOf(
-      LinesRemovedEvent(index = 1, count = 2),
+      LinesRemovedEvent(index = 1, lines = listOf(terminalLine("secondLine"), terminalLine("thirdLine"))),
       LinesAddedEvent(index = 2, lines = listOf(fillerLine, fillerLine)),
     )
     assertEquals(expected, events)
@@ -755,12 +772,12 @@ class TextBufferChangesListenerTest : TestCase() {
         events.add(LinesAddedEvent(index, lines))
       }
 
-      override fun linesRemoved(index: Int, count: Int) {
-        events.add(LinesRemovedEvent(index, count))
+      override fun linesRemoved(index: Int, lines: List<TerminalLine>) {
+        events.add(LinesRemovedEvent(index, lines))
       }
 
-      override fun linesMovedToHistory(count: Int) {
-        events.add(LinesMovedToHistoryEvent(count))
+      override fun linesMovedToHistory(lines: List<TerminalLine>) {
+        events.add(LinesMovedToHistoryEvent(lines))
       }
 
       override fun historyCleared() {
@@ -793,9 +810,9 @@ class TextBufferChangesListenerTest : TestCase() {
   private sealed interface TextBufferChangeEvent {
     data class LinesAddedEvent(val index: Int, val lines: List<TerminalLine>) : TextBufferChangeEvent
 
-    data class LinesRemovedEvent(val index: Int, val count: Int) : TextBufferChangeEvent
+    data class LinesRemovedEvent(val index: Int, val lines: List<TerminalLine>) : TextBufferChangeEvent
 
-    data class LinesMovedToHistoryEvent(val count: Int) : TextBufferChangeEvent
+    data class LinesMovedToHistoryEvent(val lines: List<TerminalLine>) : TextBufferChangeEvent
 
     data object HistoryClearedEvent : TextBufferChangeEvent
 

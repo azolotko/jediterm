@@ -6,13 +6,13 @@ import org.jetbrains.annotations.ApiStatus
 interface TextBufferChangesListener {
   fun linesAdded(index: Int, lines: List<TerminalLine>) {}
 
-  fun linesRemoved(index: Int, count: Int) {}
+  fun linesRemoved(index: Int, lines: List<TerminalLine>) {}
 
   /**
-   * [count] of top lines of the screen are moved to the bottom of the history buffer.
+   * Top [lines] of the screen are moved to the bottom of the history buffer.
    * It means that these lines are finalized and won't be changed anymore.
    */
-  fun linesMovedToHistory(count: Int) {}
+  fun linesMovedToHistory(lines: List<TerminalLine>) {}
 
   fun historyCleared() {}
 

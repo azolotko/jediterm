@@ -102,15 +102,14 @@ private inline fun LinesStorage.perform(count: Int, reverse: Boolean, operation:
   }
 }
 
-fun LinesStorage.removeBottomEmptyLines(maxCount: Int): Int {
-  var removedCount = 0
+fun LinesStorage.removeBottomEmptyLines(maxCount: Int): List<TerminalLine> {
+  var countToRemove = 0
   var ind: Int = size - 1
-  while (removedCount < maxCount && ind >= 0 && this[ind].isNulOrEmpty) {
+  while (countToRemove < maxCount && ind >= 0 && this[ind].isNulOrEmpty) {
     ind--
-    removedCount++
+    countToRemove++
   }
-  removeFromBottom(removedCount)
-  return removedCount
+  return removeFromBottom(countToRemove)
 }
 
 /**
@@ -131,8 +130,10 @@ fun LinesStorage.processLines(yStart: Int, count: Int, consumer: StyledTextConsu
  * @param y        index of the insertion point, the operation does not affect all lines before this line.
  * @param count    number of lines to insert.
  * @param lastLine the operation does not affect all lines after this line.
+ *
+ * @return list of lines removed from the end of [y, lastLine] range after the insertion.
  */
-fun LinesStorage.insertLines(y: Int, count: Int, lastLine: Int, filler: TerminalLine.TextEntry) {
+fun LinesStorage.insertLines(y: Int, count: Int, lastLine: Int, filler: TerminalLine.TextEntry): List<TerminalLine> {
   val tailLinesCount = size - lastLine - 1
   val tail = if (tailLinesCount > 0) removeFromBottom(tailLinesCount) else emptyList()
 
@@ -142,8 +143,10 @@ fun LinesStorage.insertLines(y: Int, count: Int, lastLine: Int, filler: Terminal
     addToTop(TerminalLine(filler))
   }
   addAllToTop(head)
-  removeFromBottom(count)
+  val removedLines = removeFromBottom(count)
   addAllToBottom(tail)
+
+  return removedLines
 }
 
 /**
@@ -183,4 +186,18 @@ fun LinesStorage.getLinesAsString(): String {
     }
   }
   return sb.toString()
+}
+
+fun LinesStorage.toList(): List<TerminalLine> {
+  if (size == 0) {
+    return emptyList()
+  }
+  else if (size == 1) {
+    return listOf(this[0])
+  }
+  val lines = ArrayList<TerminalLine>(size)
+  for (line in this) {
+    lines.add(line)
+  }
+  return lines
 }

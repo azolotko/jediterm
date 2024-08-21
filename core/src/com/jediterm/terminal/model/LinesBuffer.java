@@ -185,7 +185,7 @@ public class LinesBuffer implements LinesStorage {
   }
 
   public int removeBottomEmptyLines(int maxCount) {
-    return LinesStorageKt.removeBottomEmptyLines(myLines, maxCount);
+    return LinesStorageKt.removeBottomEmptyLines(myLines, maxCount).size();
   }
 
   int findLineIndex(@NotNull TerminalLine line) {

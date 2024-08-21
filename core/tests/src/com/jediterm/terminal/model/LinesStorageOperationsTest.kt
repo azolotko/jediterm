@@ -269,7 +269,7 @@ class LinesStorageOperationsTest : TestCase() {
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
 
-    val removedCount = storage.removeBottomEmptyLines(2)
+    val removedCount = storage.removeBottomEmptyLines(2).size
     assertEquals(2, removedCount)
 
     val expected = """
@@ -288,7 +288,7 @@ class LinesStorageOperationsTest : TestCase() {
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
 
-    val removedCount = storage.removeBottomEmptyLines(3)
+    val removedCount = storage.removeBottomEmptyLines(3).size
     assertEquals(3, removedCount)
 
     val expected = """
@@ -304,7 +304,7 @@ class LinesStorageOperationsTest : TestCase() {
     val storage = createScreenLinesStorage(lines)
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
 
-    val removedCount = storage.removeBottomEmptyLines(0)
+    val removedCount = storage.removeBottomEmptyLines(0).size
     assertEquals(0, removedCount)
 
     val expected = """
@@ -323,7 +323,7 @@ class LinesStorageOperationsTest : TestCase() {
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
     storage.addToBottom(TerminalLine(createFillerEntry(10)))
 
-    val removedCount = storage.removeBottomEmptyLines(5)
+    val removedCount = storage.removeBottomEmptyLines(5).size
     assertEquals(3, removedCount)
 
     val expected = """
@@ -338,7 +338,7 @@ class LinesStorageOperationsTest : TestCase() {
   fun `test remove no bottom empty lines`() {
     val storage = createScreenLinesStorage(lines)
 
-    val removedCount = storage.removeBottomEmptyLines(2)
+    val removedCount = storage.removeBottomEmptyLines(2).size
     assertEquals(0, removedCount)
 
     val expected = """

@@ -20,15 +20,15 @@ internal class TextBufferChangesMulticaster : TextBufferChangesListener {
     }
   }
 
-  override fun linesRemoved(index: Int, count: Int) {
+  override fun linesRemoved(index: Int, lines: List<TerminalLine>) {
     forEachListeners {
-      it.linesRemoved(index, count)
+      it.linesRemoved(index, lines)
     }
   }
 
-  override fun linesMovedToHistory(count: Int) {
+  override fun linesMovedToHistory(lines: List<TerminalLine>) {
     forEachListeners {
-      it.linesMovedToHistory(count)
+      it.linesMovedToHistory(lines)
     }
   }
 

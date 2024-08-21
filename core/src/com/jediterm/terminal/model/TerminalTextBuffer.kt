@@ -150,7 +150,7 @@ class TerminalTextBuffer(
         val removedLines = screenLinesStorage.removeFromTop(screenLinesToMove)
         historyLinesStorage.addAllToBottom(removedLines)
         if (removedLines.isNotEmpty()) {
-          changesMulticaster.linesMovedToHistory(removedLines.size)
+          changesMulticaster.linesMovedToHistory(removedLines)
         }
 
         newCursorY = oldCursorY - screenLinesToMove
@@ -453,12 +453,12 @@ class TerminalTextBuffer(
   fun insertLines(y: Int, count: Int, scrollRegionBottom: Int) {
     val lastLineY = scrollRegionBottom - 1
     val filler = createFillerEntry()
-    screenLinesStorage.insertLines(y, count, lastLineY, filler)
+    val deletedLines = screenLinesStorage.insertLines(y, count, lastLineY, filler)
 
     if (y <= lastLineY && count > 0) {
       val fillerLines = buildList { repeat(count) { add(TerminalLine(filler)) } }
       changesMulticaster.linesAdded(y, fillerLines)
-      changesMulticaster.linesRemoved(lastLineY + 1, count)
+      changesMulticaster.linesRemoved(lastLineY + 1, deletedLines)
     }
     fireModelChangeEvent()
   }
@@ -480,10 +480,10 @@ class TerminalTextBuffer(
     if (deletedCount > 0) {
       if (isMoveToHistory) {
         historyLinesStorage.addAllToBottom(deletedLines)
-        changesMulticaster.linesMovedToHistory(deletedCount)
+        changesMulticaster.linesMovedToHistory(deletedLines)
       }
       else {
-        changesMulticaster.linesRemoved(y, deletedCount)
+        changesMulticaster.linesRemoved(y, deletedLines)
       }
       val fillerLines = buildList { repeat(deletedCount) { add(TerminalLine(filler)) } }
       changesMulticaster.linesAdded(lastLineY - deletedCount + 1, fillerLines)
@@ -526,11 +526,11 @@ class TerminalTextBuffer(
   }
 
   fun clearScreenBuffer() {
-    val screenLinesSize = screenLinesStorage.size
+    val screenLines = screenLinesStorage.toList()
     screenLinesStorage.clear()
 
-    if (screenLinesSize > 0) {
-      changesMulticaster.linesRemoved(0, screenLinesSize)
+    if (screenLines.isNotEmpty()) {
+      changesMulticaster.linesRemoved(0, screenLines)
     }
     fireModelChangeEvent()
   }
@@ -579,7 +579,7 @@ class TerminalTextBuffer(
       historyLinesStorage.addAllToBottom(removedScreenLines)
 
       if (removedScreenLines.isNotEmpty()) {
-        changesMulticaster.linesMovedToHistory(removedScreenLines.size)
+        changesMulticaster.linesMovedToHistory(removedScreenLines)
         fireHistoryBufferLineCountChanged()
       }
 
@@ -612,9 +612,9 @@ class TerminalTextBuffer(
   }
 
   private fun removeBottomEmptyLines(count: Int): Int {
-    val removedCount = screenLinesStorage.removeBottomEmptyLines(count)
-    changesMulticaster.linesRemoved(screenLinesStorage.size, removedCount)
-    return removedCount
+    val removedLines = screenLinesStorage.removeBottomEmptyLines(count)
+    changesMulticaster.linesRemoved(screenLinesStorage.size, removedLines)
+    return removedLines.size
   }
 
   private inline fun <T> getLineAndDoWithReportingChanges(index: Int, action: (TerminalLine) -> T): T {
