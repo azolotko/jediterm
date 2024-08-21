@@ -674,6 +674,56 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  // -------------------- Wrap Lines --------------------------------------------------------------
+
+  fun `test wrap line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.setLineWrapped(1, true)
+    }
+
+    val expected = listOf(
+      LineWrappedStateChangedEvent(index = 1, isWrapped = true)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test unwrap line`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.setLineWrapped(1, true)
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.setLineWrapped(1, false)
+    }
+
+    val expected = listOf(
+      LineWrappedStateChangedEvent(index = 1, isWrapped = false)
+    )
+    assertEquals(expected, events)
+  }
+
+  fun `test do not send wrapped state changed event if actual wrapped state is not changed`() {
+    val buffer = TerminalTextBuffer(10, 10, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.addLine(terminalLine("thirdLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.setLineWrapped(1, false)
+    }
+
+    // There should be no event because the line is already unwrapped.
+    val expected = emptyList<TextBufferChangeEvent>()
+    assertEquals(expected, events)
+  }
+
   private fun spacesEntry(width: Int): TextEntry {
     return TextEntry(TextStyle.EMPTY, CharBuffer(CharUtils.EMPTY_CHAR, width))
   }

@@ -338,7 +338,11 @@ class TerminalTextBuffer(
    * Negative indexes are for history buffer. Non-negative for screen buffer.
    */
   fun setLineWrapped(index: Int, isWrapped: Boolean) {
-    getLine(index).isWrapped = isWrapped
+    val line = getLine(index)
+    if (line.isWrapped != isWrapped) {
+      line.isWrapped = isWrapped
+      changesMulticaster.lineWrappedStateChanged(index, isWrapped)
+    }
   }
 
   fun getScreenLines(): String {
