@@ -265,6 +265,25 @@ class TextBufferChangesListenerTest : TestCase() {
     assertEquals(expected, events)
   }
 
+  fun `test resize with changing width`() {
+    val buffer = TerminalTextBuffer(10, 4, StyleState())
+    buffer.addLine(terminalLine("firstLine"))
+    buffer.addLine(terminalLine("secondLine"))
+    buffer.moveScreenLinesToHistory()
+    buffer.addLine(terminalLine("thirdLine"))
+    buffer.addLine(terminalLine("forthLine"))
+    buffer.addLine(terminalLine("fifthLine"))
+
+    val events = buffer.doWithCollectingEvents {
+      buffer.resize(TermSize(5, 4), CellPosition(9, 3), selection = null)
+    }
+
+    val expected = listOf(
+      BufferWidthResizedEvent(newWidth = 5)
+    )
+    assertEquals(expected, events)
+  }
+
   // -------------------- Add, Move to History ----------------------------------------------------
 
   fun `test adding new line`() {
