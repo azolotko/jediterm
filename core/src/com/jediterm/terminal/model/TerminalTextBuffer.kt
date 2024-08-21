@@ -521,15 +521,8 @@ class TerminalTextBuffer(
   }
 
   fun clearScreenAndHistoryBuffers() {
-    val screenLinesSize = screenLinesStorage.size
-    screenLinesStorage.clear()
-    historyLinesStorage.clear()
-
-    if (screenLinesSize > 0) {
-      changesMulticaster.linesRemoved(0, screenLinesSize)
-    }
-    changesMulticaster.historyCleared()
-    fireModelChangeEvent()
+    clearScreenBuffer()
+    clearHistory()
   }
 
   fun clearScreenBuffer() {
