@@ -496,10 +496,10 @@ class TerminalTextBuffer(
   fun clearLines(startRow: Int, endRow: Int) {
     val filler = createFillerEntry()
     for (ind in startRow..endRow) {
+      setLineWrapped(ind, false)
       getLineAndDoWithReportingChanges(ind) { line ->
         line.clear(filler)
       }
-      setLineWrapped(ind, false)
     }
     fireModelChangeEvent()
   }

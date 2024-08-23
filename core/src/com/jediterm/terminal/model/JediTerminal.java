@@ -480,11 +480,11 @@ public class JediTerminal implements Terminal, TerminalMouseListener, TerminalCo
     try {
       switch (arg) {
         case 0:
+          // Delete the end of the line: line is no more wrapped
+          myTerminalTextBuffer.setLineWrapped(myCursorY - 1, false);
           if (myCursorX < myTerminalWidth) {
             myTerminalTextBuffer.eraseCharacters(myCursorX, -1, myCursorY - 1);
           }
-          // delete to the end of line : line is no more wrapped
-          myTerminalTextBuffer.setLineWrapped(myCursorY - 1, false);
           break;
         case 1:
           final int extent = Math.min(myCursorX + 1, myTerminalWidth);
